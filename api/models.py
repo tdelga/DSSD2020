@@ -7,7 +7,7 @@ class Proyecto(models.Model):
     date_of_start = models.DateTimeField(default=timezone.now)
     date_of_end = models.DateTimeField(default=timezone.now)
     responsable =  models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    
+
 class Protocolo(models.Model):
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
@@ -17,7 +17,7 @@ class Protocolo(models.Model):
     orden = models.IntegerField(default=0)
     es_local = models.BooleanField(default=False)
     date_of_start = models.DateTimeField(default=timezone.now)
-    date_of_end = models.DateTimeField(default=timezone.now)
+    date_of_end = models.DateTimeField()
 
     def __str__(self):
         return self.name
