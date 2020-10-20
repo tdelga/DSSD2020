@@ -2,7 +2,12 @@ from django.db import models
 import datetime
 from django.utils import timezone
 
-
+class Proyecto(models.Model):
+    name = models.CharField(max_length=200)
+    date_of_start = models.DateTimeField(default=timezone.now)
+    date_of_end = models.DateTimeField(default=timezone.now)
+    responsable =  models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    
 class Protocolo(models.Model):
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
@@ -17,11 +22,7 @@ class Protocolo(models.Model):
     def __str__(self):
         return self.name
 
-class Proyecto(models.Model):
-    name = models.CharField(max_length=200)
-    date_of_start = models.DateTimeField(default=timezone.now)
-    date_of_end = models.DateTimeField(default=timezone.now)
-    responsable =  models.ForeignKey('auth.User', on_delete=models.CASCADE)
+
 
 
     def __str__(self):
