@@ -2,15 +2,19 @@ from django.db import models
 import datetime
 from django.utils import timezone
 
+
+class Miembro_proyecto(models.Model):
+    name = models.CharField(max_length=200)
+
 class Proyecto(models.Model):
     name = models.CharField(max_length=200)
     date_of_start = models.DateTimeField(default=timezone.now)
     date_of_end = models.DateTimeField(default=timezone.now)
-    responsable =  models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
 
 class Protocolo(models.Model):
-    author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    author = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE,null=True)
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=200)
     puntaje = models.IntegerField(default=0)
@@ -30,7 +34,4 @@ class Actividad(models.Model):
 
 class Actividades_protocolo(models.Model):
     actividad = models.ForeignKey(Actividad , on_delete=models.CASCADE , related_name='actividad_protocolo')
-    protocolo = models.ForeignKey(Actividad , on_delete=models.CASCADE , related_name='protocolo_actividad')
-
-class Miembro_proyecto(models.Model):
-    name = models.CharField(max_length=200)
+    protocolo = models.ForeignKey(Protocolo , on_delete=models.CASCADE , related_name='protocolo_actividad')

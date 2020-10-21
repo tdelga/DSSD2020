@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
-from api.models import Protocolo
+from api.models import Protocolo,Miembro_proyecto,Proyecto
 from rest_framework import viewsets,status,permissions
-from api.serializers import UserSerializer, GroupSerializer , ProtocolosSerializer
+from api.serializers import UserSerializer, GroupSerializer , ProtocolosSerializer,MiembroProyectoSerializer,ProyectoSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
@@ -36,6 +36,22 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     serializer_class = ProtocolosSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class ProyectoViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows protocols to be viewed or edited.
+    """
+    queryset = Proyecto.objects.all()
+    serializer_class = ProyectoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class MiembroProyectoViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows protocols to be viewed or edited.
+    """
+    queryset = Miembro_proyecto.objects.all()
+    serializer_class = MiembroProyectoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 @api_view(["PUT","GET"])
 @csrf_exempt
 @permission_classes([permissions.IsAuthenticated])
@@ -50,6 +66,38 @@ def updateProtocol(request,pk_project,pk):
             protcol = Protocolo.objects.get(id=pk)
             serializer = ProtocolosSerializer(protcol)
             return JsonResponse({'protocol': serializer.data}, safe=False, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist as e:
+            return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif request.method == 'GET':
+        users = Protocolo.objects.all()
+        serializer = ProtocolosSerializer(users, many=True)
+        return Response(serializer.data)
+
+@api_view(["POST","GET"])
+@csrf_exempt
+@permission_classes([permissions.IsAuthenticated])
+def createProtocol(request,pk_project,pk):
+    if request.method == 'POST':
+        payload = request.POST
+        user = request.user
+        try:
+            author = User.objects.get(id=payload["id"])
+            protocol = Protocolo.objects.create(
+                name="Protocol_2",
+                status= "b",
+                puntaje= 4,
+                orden= 1,
+                es_local= False,
+                date_of_start= "2012-09-04 06:00",
+                date_of_end= "2012-09-04 06:00",
+                author_id=1,
+                proyecto_id= 1,
+                author=author
+            )
+            serializer = ProtocolosSerializer(protocol)
+            return JsonResponse({'books': serializer.data}, safe=False, status=status.HTTP_201_CREATED)
         except ObjectDoesNotExist as e:
             return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
         except Exception:
