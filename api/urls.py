@@ -11,6 +11,5 @@ router.register(r'protocolos', views.ProtocoloViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('updateProtocol/<int:pk>', views.updateProtocol)
 ]
 
