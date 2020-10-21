@@ -13,8 +13,8 @@ class Proyecto(models.Model):
     miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
 
 class Protocolo(models.Model):
-    author = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True)
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE,null=True)
+    author = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True,related_name="protocolo_id")
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE,null=True,related_name="protocolo_id")
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=200)
     puntaje = models.IntegerField(default=0)

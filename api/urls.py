@@ -10,10 +10,11 @@ router.register(r'protocolos', views.ProtocoloViewSet)
 router.register(r'miembroProyecto', views.MiembroProyectoViewSet)
 router.register(r'proyectoProtocolo', views.ProyectoViewSet)
 
+
 urlpatterns = [
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('updateProtocol/<int:pk_project>/<int:pk>/', views.updateProtocol),
+
     path('createProtocol/<int:pk_project>/<int:pk>/', views.createProtocol)
 ]
 

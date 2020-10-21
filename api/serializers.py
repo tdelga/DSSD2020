@@ -17,8 +17,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class ProtocolosSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Protocolo
-        fields = ['id','name','status','puntaje','orden','es_local','date_of_start','date_of_end','author_id','proyecto_id'] 
-        depth = 1
+        fields = "__all__" 
 
 class ProyectoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
