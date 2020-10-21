@@ -6,8 +6,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.http import JsonResponse
+from rest_framework.test import APIRequestFactory
 from datetime import datetime
 import json
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,18 +39,17 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     serializer_class = ProtocolosSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=False, methods=['PUT','GET'], url_path="update/<int:pk_project>/<int:pk>", url_name="update")
-    def updateProtocol(self,request,pk_project,pk):
+    @action(detail=True, methods=['PUT','GET'], url_path="update/(?P<pk_project>[^/.]+)", url_name="update")
+    def updat(self,request,pk,pk_project):
+        
         if request.method == 'PUT':
-            user = request.user.id
-            payload = json.loads(request.body)
             try:
                 protcol_item = Protocolo.objects.filter(author=user, proyecto_id=pk_project,id=pk)
                 # returns 1 or 0
                 if (protcol_item.name=="Protocol_2"):
-                    protcol_item.update(**payload)
+                    
                     protcol = Protocolo.objects.get(id=pk)
-                    serializer = ProtocolosSerializer(protcol)
+                    serializer = ProtocolosSerializer(protcol,ccontext={'request': request})
                     return JsonResponse({'protocol': serializer.data}, safe=False, status=status.HTTP_200_OK)
             except ObjectDoesNotExist as e:
                 return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
@@ -56,7 +57,7 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
                 return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         elif request.method == 'GET':
             users = Protocolo.objects.all()
-            serializer = ProtocolosSerializer(users, many=True)
+            serializer = ProtocolosSerializer(users, many=True,context={'request': request})
             return Response(serializer.data)
 
 class ProyectoViewSet(viewsets.ModelViewSet):
