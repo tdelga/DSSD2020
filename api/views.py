@@ -35,20 +35,6 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     serializer_class = ProtocolosSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def updateProtocol(self,request, pk):
-        user = request.user.id
-        payload = json.loads(request.body)
-        try:
-            protcol_item = Protocolo.objects.filter(author=user, id=pk)
-            # returns 1 or 0
-            protcol_item.update(**payload)
-            protcol = Protocolo.objects.get(id=pk)
-            serializer = ProtocolosSerializer(protcol)
-            return JsonResponse({'protocol': serializer.data}, safe=False, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist as e:
-            return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
-        except Exception:
-            return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+   
 
 
