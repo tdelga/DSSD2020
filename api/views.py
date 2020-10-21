@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.http import JsonResponse
 from rest_framework.test import APIRequestFactory
-from datetime import datetime
+import datetime
 import json
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -29,7 +29,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
 class ProtocoloViewSet(viewsets.ModelViewSet):
     """
@@ -37,24 +37,31 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     """
     queryset = Protocolo.objects.all()
     serializer_class = ProtocolosSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=True, methods=['PUT','GET'], url_path="update/(?P<pk_project>[^/.]+)", url_name="update")
-    def updat(self,request,pk,pk_project):
+    @action(detail=True, methods=['PUT','GET'], url_path="inicializar/(?P<pk_project>[^/.]+)", url_name="update")
+    def inicializar(self,request,pk,pk_project):
         
         if request.method == 'PUT':
             try:
-                protcol_item = Protocolo.objects.filter(author=user, proyecto_id=pk_project,id=pk)
-                # returns 1 or 0
-                if (protcol_item.name=="Protocol_2"):
-                    
-                    protcol = Protocolo.objects.get(id=pk)
-                    serializer = ProtocolosSerializer(protcol,ccontext={'request': request})
-                    return JsonResponse({'protocol': serializer.data}, safe=False, status=status.HTTP_200_OK)
+                
+                protcol_item = Protocolo.objects.get(id=pk)
+                if(protcol_item.status == "executing"):
+                    raise Exception("El protocolo ya esta iniciado")
+                if(protcol_item.proyecto_id != pk_project):
+                    raise Exception("El protocolo no pertenece a ese proyecto")
+                protcol_item.date_of_start = datetime.datetime.now()
+                protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
+                protcol_item.status ="executing"
+                
+                protcol_item.save()    
+                
+
+                return JsonResponse({'Protocolo ': "Se inicializo correctamente"}, safe=False, status=status.HTTP_200_OK)
             except ObjectDoesNotExist as e:
-                return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
-            except Exception:
-                return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return JsonResponse({'error': "El protocolo no existe"}, safe=False, status=status.HTTP_404_NOT_FOUND)
+            except Exception as er:
+                return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         elif request.method == 'GET':
             users = Protocolo.objects.all()
             serializer = ProtocolosSerializer(users, many=True,context={'request': request})
@@ -66,7 +73,7 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     """
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
 class MiembroProyectoViewSet(viewsets.ModelViewSet):
     """
@@ -74,7 +81,7 @@ class MiembroProyectoViewSet(viewsets.ModelViewSet):
     """
     queryset = Miembro_proyecto.objects.all()
     serializer_class = MiembroProyectoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
     
 
