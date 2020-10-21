@@ -16,7 +16,7 @@ class Protocolo(models.Model):
     puntaje = models.IntegerField(default=0)
     orden = models.IntegerField(default=0)
     es_local = models.BooleanField(default=False)
-    date_of_start = models.DateTimeField(default=timezone.now)
+    date_of_start = models.DateTimeField(default=datetime.datetime.now)
     date_of_end = models.DateTimeField()
 
     def __str__(self):

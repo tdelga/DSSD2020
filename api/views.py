@@ -5,6 +5,7 @@ from api.serializers import UserSerializer, GroupSerializer , ProtocolosSerializ
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
+from datetime import datetime
 import json
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
@@ -35,6 +36,25 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     serializer_class = ProtocolosSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-   
-
-
+@api_view(["PUT","GET"])
+@csrf_exempt
+@permission_classes([permissions.IsAuthenticated])
+def updateProtocol(request,pk_project,pk):
+    if request.method == 'PUT':
+        user = request.user.id
+        payload = json.loads(request.body)
+        try:
+            protcol_item = Protocolo.objects.filter(author=user, proyecto_id=pk_project,id=pk)
+            # returns 1 or 0
+            protcol_item.update(**payload)
+            protcol = Protocolo.objects.get(id=pk)
+            serializer = ProtocolosSerializer(protcol)
+            return JsonResponse({'protocol': serializer.data}, safe=False, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist as e:
+            return JsonResponse({'error': str(e)}, safe=False, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return JsonResponse({'error': 'Something terrible went wrong'}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif request.method == 'GET':
+        users = Protocolo.objects.all()
+        serializer = ProtocolosSerializer(users, many=True)
+        return Response(serializer.data)
