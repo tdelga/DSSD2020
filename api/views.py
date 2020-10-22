@@ -30,7 +30,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 class ProtocoloViewSet(viewsets.ModelViewSet):
     """
@@ -38,14 +38,13 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     """
     queryset = Protocolo.objects.all()
     serializer_class = ProtocolosSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=True, methods=['PUT','GET'], url_path="inicializar/(?P<pk_project>[^/.]+)", url_name="update")
     def inicializar(self,request,pk,pk_project):
         
         if request.method == 'PUT':
             try:
-                
                 protcol_item = Protocolo.objects.get(id=pk)
                 if(protcol_item.status == "executing"):
                     raise Exception("El protocolo ya esta iniciado")
