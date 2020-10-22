@@ -8,8 +8,8 @@ class Miembro_proyecto(models.Model):
 
 class Proyecto(models.Model):
     name = models.CharField(max_length=200)
-    date_of_start = models.DateTimeField(default=timezone.now)
-    date_of_end = models.DateTimeField(default=timezone.now)
+    date_of_start = models.DateTimeField(default=datetime.datetime.now)
+    date_of_end = models.DateTimeField(default=datetime.datetime.now)
     miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
 
 class Protocolo(models.Model):
@@ -21,7 +21,7 @@ class Protocolo(models.Model):
     orden = models.IntegerField(default=0)
     es_local = models.BooleanField(default=False)
     date_of_start = models.DateTimeField(default=datetime.datetime.now)
-    date_of_end = models.DateTimeField()
+    date_of_end = models.DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
         return self.name
