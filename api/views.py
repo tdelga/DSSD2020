@@ -49,7 +49,7 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
                 protcol_item = Protocolo.objects.get(id=pk)
                 if(protcol_item.status == "executing"):
                     raise Exception("El protocolo ya esta iniciado")
-                if(protcol_item.proyecto_id != pk_project):
+                if(int(protcol_item.proyecto_id) != int(pk_project)):
                     raise Exception("El protocolo no pertenece a ese proyecto")
                 protcol_item.date_of_start = datetime.datetime.now()
                 protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
