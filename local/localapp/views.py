@@ -1,5 +1,8 @@
 from django.shortcuts import render
+from .forms import ProyectoForm
+from .forms import ProtocoloForm
 
 def index(request):
-	form = PostForm()
-    return render(request, 'localapp/index.html', {form:form})
+    formProyecto = ProyectoForm()
+    formProtocolo = ProtocoloForm()
+    return render(request, 'localapp/index.html', {'formProyecto':formProyecto,'formProtocolo':formProtocolo})

@@ -11,10 +11,10 @@ class Proyecto(models.Model):
     date_of_start = models.DateTimeField(default=datetime.datetime.now)
     date_of_end = models.DateTimeField(default=datetime.datetime.now)
     miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
+    
 
 class Protocolo(models.Model):
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True,related_name="protocolo_id")
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE,null=True,related_name="protocolo_id")
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=200)
     puntaje = models.IntegerField(default=0)
@@ -25,6 +25,10 @@ class Protocolo(models.Model):
 
     def __str__(self):
         return self.name
+
+class Proyecto_protocolo(models.Model):
+    proyecto = models.ForeignKey(Proyecto , on_delete=models.CASCADE , related_name='proyecto_id')
+    protocolo = models.ForeignKey(Protocolo , on_delete=models.CASCADE , related_name='protocolo_id')
 
 class Actividad(models.Model):
     name = models.CharField(max_length=200)

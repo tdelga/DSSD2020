@@ -1,9 +1,16 @@
 from django import forms
 
 from .models import Protocolo
+from .models import Proyecto
 
-class ProtocoloForm(forms.ModelForm):
+class ProyectoForm(forms.ModelForm):
 
     class Meta:
+        model = Proyecto
+        fields = ("name","date_of_start","date_of_end")
+
+class ProtocoloForm(forms.ModelForm):
+    
+    class Meta:
         model = Protocolo
-        fields = ('author', 'proyecto','name','status','puntaje','orden','es_local','date_of_start','date_of_end')
+        fields = ("name","orden","es_local")
