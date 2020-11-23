@@ -1,4 +1,5 @@
 from django.shortcuts import render
 
 def index(request):
-    return render(request, 'localapp/index.html', {})
+	form = PostForm()
+    return render(request, 'localapp/index.html', {form:form})
