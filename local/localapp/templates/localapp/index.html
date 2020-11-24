@@ -71,13 +71,15 @@
         var intId = (lastField && lastField.length && lastField.data("idx") + 1) || 1;
         var fieldWrapper = $("<div class=\"fieldwrapper\" id=\"field" + intId + "\"/>");
         fieldWrapper.data("idx", intId);
-        var fName = $("<br><label>Name</label><input type=\"text\" class=\"form-control\" />");
+        var fName = $("<label>Name</label><input type=\"text\" class=\"form-control\" />");
         var fOrden = $("<br><label>Orden</label><input type=\"text\" class=\"form-control\" />");
-        var es_local = $("<br><label>Es local</label><input class=\"form-control\" type=\"checkbox\"/>");
-        var removeButton = $("<br><input type=\"button\" class=\"btn btn-danger\" value=\"Quitar\" />");
+        var es_local = $("<br><label>Es local</label><input style=\"width:20px;\" class=\"form-control\" type=\"checkbox\"/>");
+        var removeButton = $("<br><input  type=\"button\" class=\"btn btn-danger\" value=\"Quitar\" />");
         removeButton.click(function() {
             $(this).parent().remove();
         });
+        fieldWrapper.append($("<hr>"))
+        fieldWrapper.append($("<h3> Protocolo"+intId+"</h3>"))
         fieldWrapper.append(fName);
         fieldWrapper.append(fOrden)
         fieldWrapper.append(es_local);

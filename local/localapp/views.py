@@ -6,3 +6,6 @@ def index(request):
     formProyecto = ProyectoForm()
     formProtocolo = ProtocoloForm()
     return render(request, 'localapp/index.html', {'formProyecto':formProyecto,'formProtocolo':formProtocolo})
+
+def listProtocol(request):
+    return render(request, 'localapp/listProtocol.html',{})
