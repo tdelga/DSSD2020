@@ -4,19 +4,19 @@ from django.utils import timezone
 
 
 class Miembro_proyecto(models.Model):
-    name = models.CharField(max_length=200)
+    boss = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True,related_name="miembro_id")
 
 class Proyecto(models.Model):
     name = models.CharField(max_length=200)
     date_of_start = models.DateTimeField(default=datetime.datetime.now)
     date_of_end = models.DateTimeField(default=datetime.datetime.now)
     miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
-    status = models.CharField(max_length=20)
+    status = models.CharField(max_length=20, default='pending')
 
 class Protocolo(models.Model):
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE,null=True,related_name="protocolo_id")
     name = models.CharField(max_length=200)
-    status = models.CharField(max_length=200)
+    status = models.CharField(max_length=200, default='pending')
     puntaje = models.IntegerField(default=0)
     orden = models.IntegerField(default=0)
     es_local = models.BooleanField(default=False)
