@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth import views as auth_views
-
+from localapp.models import Proyecto
 # models
 from django.contrib.auth.models import User
 
@@ -19,6 +19,14 @@ def listProyect(request):
 
 def getProtocol(request):
     return render(request, 'localapp/getProtocol.html',{})
+
+def inicializarProyect(request, id):
+    print(id)
+    proyect = Proyecto.objects.get(id=id)
+    proyect.status = "running"
+    proyect.save()
+    return render(request, 'localapp/listProyect.html',{})
+
 
 class LoginView(auth_views.LoginView):
     redirect_authenticated_user = True
