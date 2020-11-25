@@ -14,11 +14,11 @@ def index(request):
     formProtocolo = ProtocoloForm()
     return render(request, 'localapp/index.html', {'formProyecto':formProyecto,'formProtocolo':formProtocolo})
 
-def listProtocol(request):
-    return render(request, 'localapp/listProtocol.html',{})
+def listProyect(request):
+    return render(request, 'localapp/listProyect.html',{})
 
 def getProtocol(request):
-    return render(request, 'localapp/getProtocol',{})
+    return render(request, 'localapp/getProtocol.html',{})
 
 class LoginView(auth_views.LoginView):
     redirect_authenticated_user = True
