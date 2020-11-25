@@ -17,6 +17,9 @@ def index(request):
 def listProtocol(request):
     return render(request, 'localapp/listProtocol.html',{})
 
+def getProtocol(request):
+    return render(request, 'localapp/getProtocol',{})
+
 class LoginView(auth_views.LoginView):
     redirect_authenticated_user = True
     template_name = 'localapp/login.html'

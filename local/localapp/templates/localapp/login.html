@@ -1,7 +1,18 @@
 {% extends 'localapp/base.html' %}
-{% block title %}Login{% endblock %}
+{% load bootstrap4 %}
 
-{% block content %}
+
+{% block head %}
+    {{ block.super}}
+    
+    {% block title %}
+        <title>Login</title>
+    {% endblock %}
+
+{% endblock %}
+
+{% block body %}
+
 <div id="content-container" class="container p-none">
   <div class="lgn-container col-lg-8">
     <form id="login-form" method="POST" action="{% url "login" %}">
@@ -28,4 +39,9 @@
     </form>
   </div>
 </div>
-{% endblock content %}
+
+  {% block scripts %}
+    {{ block.super }} 
+  {% endblock %}
+
+{% endblock %}
