@@ -11,7 +11,7 @@ from localapp.models import Proyecto
 # models
 from django.contrib.auth.models import User
 
-def index(request):
+def createProyect(request):
     if request.method == "POST":
         proyecto = Proyecto(name=request.POST["name"])
         proyecto.save()
@@ -24,10 +24,10 @@ def index(request):
             protocolo = Protocolo(name=request.POST["name"+str(i)],orden=int(request.POST["orden"+str(i)]),es_local=es_local)
             print(protocolo)
             protocolo.save()
-        return redirect('index')
+        return redirect('createProyect')
     else:
         form = ProyectoForm()
-    return render(request, 'localapp/index.html', {'formProyecto':form})
+    return render(request, 'localapp/createProyect.html', {'formProyecto':form})
 
 def listProyect(request):
     return render(request, 'localapp/listProyect.html',{})
@@ -42,11 +42,6 @@ def inicializarProyect(request, id):
     proyect.save()
     return render(request, 'localapp/listProyect.html',{})
 
-
-class LoginView(auth_views.LoginView):
-    redirect_authenticated_user = True
-    template_name = 'localapp/login.html'
-
-class LogoutView(LoginRequiredMixin, auth_views.LogoutView):
-    template_name = 'localapp/logged_out.html'
+def home(request):
+    return render(request, 'localapp/home.html')
 

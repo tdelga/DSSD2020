@@ -1,11 +1,11 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.home, name='home'),
+    path('createProyect', views.createProyect, name='createProyect'),
     path('listProyect', views.listProyect, name='listProyect'),
-    path('login',views.LoginView.as_view(),name='login'),
-    path('logout',views.LogoutView.as_view(),name='logout'),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('getProtocol',views.getProtocol,name='getProtocol'),
     path('inicializarProyect/<int:id>',views.inicializarProyect,name='inicializarProyect')
 ]
