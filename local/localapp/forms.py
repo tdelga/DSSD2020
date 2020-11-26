@@ -7,10 +7,10 @@ class ProyectoForm(forms.ModelForm):
 
     class Meta:
         model = Proyecto
-        fields = ("name","date_of_start","date_of_end", "miembro_id")
+        fields = ("name",)
 
 class ProtocoloForm(forms.ModelForm):
 
     class Meta:
         model = Protocolo
-        fields = ("name","orden","es_local", "author")
+        fields = ("name","orden","es_local")

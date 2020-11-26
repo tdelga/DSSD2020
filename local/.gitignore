@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#settings
+mysite/settings.py
+
 # C extensions
 *.so
 

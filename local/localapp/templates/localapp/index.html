@@ -22,8 +22,10 @@
                     <u><h3>Protocolos</h3></u>  
                     <div id="buildyourform">
                     </div>
+                    <div id="divQuatationList"></div>
                     <br>
                     <input type="button" value="Add a field" class="btn btn-primary" id="add" />
+                    <input type="hidden" id="totallength" name="totallength"  />
                     <br>
                     <br>
                     {% buttons %}
@@ -41,15 +43,16 @@
 
 
         <script>
+            var i=0
                 $(document).ready(function() {
         $("#add").click(function() {
                 var lastField = $("#buildyourform div:last");
             var intId = (lastField && lastField.length && lastField.data("idx") + 1) || 1;
-            var fieldWrapper = $("<div class=\"fieldwrapper\" id=\"field" + intId + "\"/>");
+            var fieldWrapper = $("<div class=\"fieldwrapper\"/>");
             fieldWrapper.data("idx", intId);
-            var fName = $("<label>Name</label><input type=\"text\" class=\"form-control\" />");
-            var fOrden = $("<br><label>Orden</label><input type=\"text\" class=\"form-control\" />");
-            var es_local = $("<br><label>Es local</label><input style=\"width:20px;\" class=\"form-control\" type=\"checkbox\"/>");
+            var fName = $("<label>Name</label><input name=\"name"+intId+"\" type=\"text\" class=\"form-control\" />");
+            var fOrden = $("<br><label>Orden</label><input name=\"orden"+intId+"\" type=\"text\" class=\"form-control\" />");
+            var es_local = $("<br><label>Es local</label><input style=\"width:20px;\" name=\"es_local"+intId+"\" class=\"form-control\" type=\"checkbox\"/>");
             var removeButton = $("<br><input  type=\"button\" class=\"btn btn-danger\" value=\"Quitar\" />");
             removeButton.click(function() {
                 $(this).parent().remove();
@@ -60,6 +63,9 @@
             fieldWrapper.append(fOrden)
             fieldWrapper.append(es_local);
             fieldWrapper.append(removeButton);
+            i++;
+            console.log(i)
+            $("#totallength").val(i);
             $("#buildyourform").append(fieldWrapper);
         });
         $("#preview").click(function() {
