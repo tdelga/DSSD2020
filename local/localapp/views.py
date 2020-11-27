@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from .forms import ProyectoForm
 from .forms import ProtocoloForm
 from .models import Protocolo
@@ -43,4 +43,16 @@ def inicializarProyect(request, id):
 
 def home(request):
     return render(request, 'localapp/home.html')
+
+def runProtocol(request,pk):
+    protocolo = get_object_or_404(Protocolo, pk=pk)
+    print(request.POST)
+    if request.method == "POST":
+        form = ProtocoloForm(request.POST,instance=protocolo)
+        if form.is_valid():
+            protocolo.save()
+            return redirect('index')
+    else:
+        form = ProtocoloForm()
+    return render(request, 'localapp/runProtocol.html',{'form': form,'pk':pk})
 
