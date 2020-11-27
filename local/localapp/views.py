@@ -36,7 +36,6 @@ def getProtocol(request):
     return render(request, 'localapp/getProtocol.html',{})
 
 def inicializarProyect(request, id):
-    print(id)
     proyect = Proyecto.objects.get(id=id)
     proyect.status = "running"
     proyect.save()
