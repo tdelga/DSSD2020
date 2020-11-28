@@ -33,30 +33,16 @@
                       </tr>
                     </thead>
                     <tbody>
+                      {% for protocolo in protocolos %}
                       <tr>
-                        <th scope="row">1</th>
-                        <td>Protocolo_1</td>
-                        <td>En espera</td>
-                        <td>1</td>
-                        <td>Es local</i></td>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td> {{ protocolo.nombre }} </td>
+                        <td> {{ protocolo.status }} </td>
+                        <td> {{ protocolo.orden }} </td>
+                        <td> {% if protocolo.es_local == True %} Local {% else %} Remoto {% endif %} </td>
                         <td><i class="fa fa-plus" aria-hidden="true"></i></td>
                       </tr>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Protocolo_1</td>
-                        <td>En espera</td>
-                        <td>1</td>
-                        <td>Es local</td>
-                        <td><i class="fa fa-plus" aria-hidden="true"></i></td>
-                      </tr>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Protocolo_1</td>
-                        <td>En espera</td>
-                        <td>1</td>
-                        <td>Es remoto</td>
-                        <td><i class="fa fa-plus" aria-hidden="true"></i></td>  
-                      </tr>
+                      {% endfor %}
                     </tbody>
                   </table>
             </div>

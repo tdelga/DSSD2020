@@ -33,7 +33,8 @@ def listProyect(request):
     return render(request, 'localapp/listProyect.html',{})
 
 def getProtocol(request):
-    return render(request, 'localapp/getProtocol.html',{})
+    protocolos = Protocolo.objects.all()
+    return render(request, 'localapp/getProtocol.html',{'protocolos':protocolos})
 
 def inicializarProyect(request, id):
     proyect = Proyecto.objects.get(id=id)
