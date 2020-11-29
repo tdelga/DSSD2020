@@ -9,10 +9,15 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth import views as auth_views
 from localapp.models import Proyecto
 from datetime import datetime
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from django.contrib.auth import logout
 import requests
 import httplib2
 import json
 import urllib
+from json import JSONEncoder
 
 
 # models
@@ -77,17 +82,58 @@ def selectOption(request,pk):
         return redirect('home')
     return render(request,'localapp/selectOption.html',{'pk':pk})
 
+def protocolResult(request, id):
+	if request.method == 'GET':
+		try:
+			protocol = Protocolo.objects.get(id=id)
+			if protocol.status == 'pending':
+				return JsonResponse({'result': 'El protocolo esta en estado pendiente.'}, safe=False)
+			if protocol.status == "executing":
+				return JsonResponse({'result': 'El protocolo aun no ha finalizado.'}, safe=False)
+			if protocol.status == "finished":
+				if protocol.puntaje >= 6:
+					result = 'positivo'
+				else:
+					result = 'negativo'
+			return JsonResponse({'Puntaje': protocol.puntaje, 'Resultado final': result}, safe=False)
+		except ObjectDoesNotExist as e:
+			return JsonResponse({'error': "Protocolo inexistente"}, safe=False)
+		except Exception as er:
+			return JsonResponse({'error': str(er)}, safe=False)
+
+def login_bonita(request):
+	http = httplib2.Http()
+	URL="http://localhost:8080/bonita/loginservice"
+	body={'username': request.POST['username'],	'password':	request.POST['password']}
+	headers={"Content-type":"application/x-www-form-urlencoded"}
+	response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
+	request.session['token_bpm'] = response['set-cookie']
+	print(type(response['set-cookie']))
+	print("------------------------------------------------------------------")
+	print(content)
+
 def login(request):
-    if request.method == "POST":
-        http = httplib2.Http()
-        URL="http://localhost:8080/bonita/loginservice"
-        body={'username': request.POST['username'], 'password': request.POST['password']}
-        headers={"Content-type":"application/x-www-form-urlencoded"}
-        response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
-        print(type(response['set-cookie']))
-        print("------------------------------------------------------------------")
-        print(content)
-        return redirect('home')
-    return render(request,'localapp/login.html')
+	if request.method == "POST":
+		login_bonita(request)
+		form = AuthenticationForm(request=request, data=request.POST)
+		if form.is_valid():
+			username = form.cleaned_data.get('username')
+			password = form.cleaned_data.get('password')
+			user = authenticate(username=username, password=password)
+			if user is not None:
+				login(request, user)
+				messages.info(request, f"You are now logged in as {username}")
+				return redirect('/')
+			else:
+				messages.error(request, "Invalid username or password.")
+		else:
+			messages.error(request, "Invalid username or password.")
+		return redirect('home')
+	form = AuthenticationForm()
+	return render(request = request,
+					template_name = "localapp/login.html",
+					context={"form":form})
 
-
+def logout_request(request):
+    logout(request)
+    return render(request, 'localapp/home.html')
