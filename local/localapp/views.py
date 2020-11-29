@@ -9,6 +9,11 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth import views as auth_views
 from localapp.models import Proyecto
 from datetime import datetime
+import requests
+import httplib2
+import json
+import urllib
+
 
 # models
 from django.contrib.auth.models import User
@@ -71,5 +76,18 @@ def selectOption(request,pk):
             proyecto.status = "pending"
         return redirect('home')
     return render(request,'localapp/selectOption.html',{'pk':pk})
+
+def login(request):
+    if request.method == "POST":
+        http = httplib2.Http()
+        URL="http://localhost:8080/bonita/loginservice"
+        body={'username': request.POST['username'], 'password': request.POST['password']}
+        headers={"Content-type":"application/x-www-form-urlencoded"}
+        response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
+        print(type(response['set-cookie']))
+        print("------------------------------------------------------------------")
+        print(content)
+        return redirect('home')
+    return render(request,'localapp/login.html')
 
 
