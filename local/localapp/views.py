@@ -8,6 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth import views as auth_views
 from localapp.models import Proyecto
+from datetime import datetime
+
 # models
 from django.contrib.auth.models import User
 
@@ -47,13 +49,27 @@ def home(request):
 
 def runProtocol(request,pk):
     protocolo = get_object_or_404(Protocolo, pk=pk)
-    print(request.POST)
     if request.method == "POST":
         form = ProtocoloForm(request.POST,instance=protocolo)
         if form.is_valid():
+            protocolo.status="running"
+            protocolo.date_of_start=datetime.now()
+            protocolo.author=request.user
             protocolo.save()
-            return redirect('index')
+            return redirect('home')
     else:
-        form = ProtocoloForm()
+        form = ProtocoloForm(instance=protocolo)
     return render(request, 'localapp/runProtocol.html',{'form': form,'pk':pk})
+
+def selectOption(request,pk):
+    proyecto = get_object_or_404(Proyecto,pk=pk)
+    if request.method == "POST":
+        select = request.POST["select"]
+        if  select == "canceled":
+            proyecto.status = "canceled"
+        elif select == "reset":
+            proyecto.status = "pending"
+        return redirect('home')
+    return render(request,'localapp/selectOption.html',{'pk':pk})
+
 
