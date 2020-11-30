@@ -6,12 +6,13 @@ from .models import Proyecto
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import authenticate, login,views as auth_views
 from localapp.models import Proyecto
 from datetime import datetime
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.contrib import messages
 from django.contrib.auth import logout
 import requests
 import httplib2
@@ -102,38 +103,40 @@ def protocolResult(request, id):
 			return JsonResponse({'error': str(er)}, safe=False)
 
 def login_bonita(request):
-	http = httplib2.Http()
-	URL="http://localhost:8080/bonita/loginservice"
-	body={'username': request.POST['username'],	'password':	request.POST['password']}
-	headers={"Content-type":"application/x-www-form-urlencoded"}
-	response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
-	request.session['token_bpm'] = response['set-cookie']
-	print(type(response['set-cookie']))
-	print("------------------------------------------------------------------")
-	print(content)
+    http = httplib2.Http()
+    URL="http://localhost:8080/bonita/loginservice"
+    body={'username': request.POST['username'],	'password':	request.POST['password']}
+    headers={"Content-type":"application/x-www-form-urlencoded"}
+    response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
+    setcookie = response['set-cookie'].split(";")
+    token = setcookie[4].split(",")
+    token = token[1].split("=")
+    print(token[1])
+    request.session['token_bpm'] = token
+    return response
 
-def login(request):
-	if request.method == "POST":
-		login_bonita(request)
-		form = AuthenticationForm(request=request, data=request.POST)
-		if form.is_valid():
-			username = form.cleaned_data.get('username')
-			password = form.cleaned_data.get('password')
-			user = authenticate(username=username, password=password)
-			if user is not None:
-				login(request, user)
-				messages.info(request, f"You are now logged in as {username}")
-				return redirect('/')
-			else:
-				messages.error(request, "Invalid username or password.")
-		else:
-			messages.error(request, "Invalid username or password.")
-		return redirect('home')
-	form = AuthenticationForm()
-	return render(request = request,
-					template_name = "localapp/login.html",
-					context={"form":form})
+def loginn(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request=request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login_bonita(request)
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}")
+                return redirect('/')
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+        return redirect('home')
+    form = AuthenticationForm()
+    return render(request = request,template_name = "localapp/login2.html",context={"form":form})
 
 def logout_request(request):
     logout(request)
+    requests.get("http://localhost:8080/bonita/logoutservice")
     return render(request, 'localapp/home.html')
+  
