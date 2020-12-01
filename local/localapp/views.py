@@ -27,16 +27,38 @@ from django.contrib.auth.models import User
 def createProyect(request):
     if request.method == "POST":
         proyecto = Proyecto(name=request.POST["name"])
-        proyecto.save()
+        #proyecto.save()
         rango=range(1,int(request.POST["totallength"])+1)
-        for i in rango:
+        for i in rango: 
             if request.POST["es_local"+str(i)] == "on":
                 es_local=True
             else:
                 es_local=False
             protocolo = Protocolo(name=request.POST["name"+str(i)],orden=int(request.POST["orden"+str(i)]),es_local=es_local)
-            print(protocolo)
-            protocolo.save()
+            #protocolo.save()
+        cookies={
+            'X-Bonita-API-Token':request.session['xbonita'],
+            'BOS_Locale':request.session['boslocale'],
+            'JSESSIONID':request.session['session'],
+            'bonita.tenant':request.session['bonita.tenant']}
+        x = requests.get("http://localhost:8080/bonita/API/bpm/process?p=0&c=1000",cookies=cookies)
+        id = x.json()[0]['id']
+        requests.post("http://localhost:8080/bonita/API/bpm/process/"+id+"/instantiation",headers={'X-Bonita-API-Token':request.session['xbonita']},cookies=cookies)
+        
+        nameUser = requests.get("http://localhost:8080/bonita/API/identity/user?f=walter.bates",cookies=cookies )
+        idUser = nameUser.json()[0]['id']
+
+        nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dConfiguracion del proyecto",cookies=cookies)
+        idTask = nameTask.json()[0]['id']
+        body = { 
+                "assigned_id" : idUser, 
+                "state": "completed"
+                }
+        print(body)
+        assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,data={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
+        print(assingUser.headers)
+        print(assingUser.cookies)
+        print(assingUser)
         return redirect('createProyect')
     else:
         form = ProyectoForm()
@@ -105,14 +127,14 @@ def protocolResult(request, id):
 def login_bonita(request):
     http = httplib2.Http()
     URL="http://localhost:8080/bonita/loginservice"
-    body={'username': request.POST['username'],	'password':	request.POST['password']}
+    body={'username': request.POST['username'],    'password':    request.POST['password'], 'redirect':'false'}
     headers={"Content-type":"application/x-www-form-urlencoded"}
-    response, content = http.request(URL,'POST',headers=headers,body=urllib.parse.urlencode(body))
-    setcookie = response['set-cookie'].split(";")
-    token = setcookie[4].split(",")
-    token = token[1].split("=")
-    print(token[1])
-    request.session['token_bpm'] = token
+    response = requests.post(URL,headers=headers,data=urllib.parse.urlencode(body))
+    request.session['xbonita']=response.cookies["X-Bonita-API-Token"]
+    request.session['boslocale']=response.cookies["BOS_Locale"]
+    request.session['session']= response.cookies["JSESSIONID"]
+    request.session['bonita.tenant']= response.cookies["bonita.tenant"]
+
     return response
 
 def loginn(request):
@@ -125,18 +147,13 @@ def loginn(request):
             if user is not None:
                 login_bonita(request)
                 login(request, user)
-                messages.info(request, f"You are now logged in as {username}")
                 return redirect('/')
-            else:
-                messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Invalid username or password.")
         return redirect('home')
     form = AuthenticationForm()
     return render(request = request,template_name = "localapp/login2.html",context={"form":form})
 
 def logout_request(request):
     logout(request)
-    requests.get("http://localhost:8080/bonita/logoutservice")
+    requests.get("http://localhost:8080/bonita/logoutservice",headers={'redirect':'false'})
     return render(request, 'localapp/home.html')
   
