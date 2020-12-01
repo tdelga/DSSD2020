@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 
 def createProyect(request):
     if request.method == "POST":
-        proyecto = Proyecto(name=request.POST["name"])
+        proyecto = Proyecto(name=request.POST["name"],cantidad=int(request.POST["totallength"]))
         proyecto.save()
         rango=range(1,int(request.POST["totallength"])+1)
         for i in rango: 
