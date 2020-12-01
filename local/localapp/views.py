@@ -191,4 +191,12 @@ def logout_request(request):
     logout(request)
     requests.get("http://localhost:8080/bonita/logoutservice",headers={'redirect':'false'})
     return render(request, 'localapp/home.html')
-  
+
+def checkProtocolsPending(request, id):
+    if request.method == 'GET':
+        protocolo = get_object_or_404(Protocolo, id=id)
+        proyect = protocolo.proyect
+        if proyect.cantidad > protocol.orden:
+            return JsonResponse({'Hay protocolos pendientes'}, safe=False)
+        else:
+            return JsonResponse({'No hay mas protocolos pendientes'}, safe=False)

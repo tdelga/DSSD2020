@@ -13,4 +13,5 @@ urlpatterns = [
     path('selectOption/<int:pk>',views.selectOption, name="selectOption"),
     path('inicializarProyect/<int:id>',views.inicializarProyect, name='inicializarProyect'),
     path('protocolResult/<int:id>', views.protocolResult, name='protocolResult'),
+    path('checkProtocolsPending/<int:id>', views.checkProtocolsPending, name='checkProtocolsPending'),
 ]
