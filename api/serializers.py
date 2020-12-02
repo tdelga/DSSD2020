@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User, Group
-from api.models import Protocolo,Proyecto,Miembro_proyecto
+from api.models import Protocolo,Proyecto,Miembro_proyecto,Proyecto_protocolo
 from rest_framework import serializers
 
 
@@ -27,4 +27,9 @@ class ProyectoSerializer(serializers.HyperlinkedModelSerializer):
 class MiembroProyectoSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Miembro_proyecto
+        fields = "__all__"
+
+class ProyectoProtocoloSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Proyecto_protocolo
         fields = "__all__"

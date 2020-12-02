@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
-from api.models import Protocolo,Miembro_proyecto,Proyecto
+from api.models import Protocolo,Miembro_proyecto,Proyecto,Proyecto_protocolo
 from rest_framework import viewsets,status,permissions
-from api.serializers import UserSerializer, GroupSerializer , ProtocolosSerializer,MiembroProyectoSerializer,ProyectoSerializer
+from api.serializers import UserSerializer, GroupSerializer ,ProyectoProtocoloSerializer, ProtocolosSerializer,MiembroProyectoSerializer,ProyectoSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -95,6 +95,14 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     """
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
+    #permission_classes = [permissions.IsAuthenticated]
+
+class ProyectoProtocoloViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows protocols to be viewed or edited.
+    """
+    queryset = ProyectoProtocolo.objects.all()
+    serializer_class = ProyectoProtocoloSerializer
     #permission_classes = [permissions.IsAuthenticated]
 
 class MiembroProyectoViewSet(viewsets.ModelViewSet):

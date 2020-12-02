@@ -11,8 +11,8 @@ router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'protocolos', views.ProtocoloViewSet)
 router.register(r'miembroProyecto', views.MiembroProyectoViewSet)
-router.register(r'proyectoProtocolo', views.ProyectoViewSet)
-
+router.register(r'proyectoProtocolo', views.ProyectoProtocoloViewSet)
+router.register(r'proyecto',views.ProyectoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
