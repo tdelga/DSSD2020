@@ -101,7 +101,7 @@ class ProyectoProtocoloViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows protocols to be viewed or edited.
     """
-    queryset = ProyectoProtocolo.objects.all()
+    queryset = Proyecto_protocolo.objects.all()
     serializer_class = ProyectoProtocoloSerializer
     #permission_classes = [permissions.IsAuthenticated]
 
