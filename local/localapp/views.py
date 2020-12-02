@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login,views as auth_views
 from datetime import datetime
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.contrib import messages
 from django.contrib.auth import logout
 import requests
@@ -28,16 +28,34 @@ def createProyect(request):
     if request.method == "POST":
         proyecto = Proyecto(name=request.POST["name"],cantidad=int(request.POST["totallength"]))
         proyecto.save()
+        
+        x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
+        token = x.json()['access']
+
+        print(token)
+    
+        headers = {"Authorization": "Bearer "+token}
+        json = {
+                "name":request.POST["name"],
+                "cantidad":request.POST["totallength"],
+                "status":"pending",
+            }
+
+        x=requests.post("https://dssddjango.herokuapp.com/proyectoProtocolo/",headers=headers,json=json)
+  
+        
         rango=range(1,int(request.POST["totallength"])+1)
         for i in rango: 
-            if request.POST["es_local"+str(i)] == "on":
-                es_local=True
+            if 'es_local'+str(i) in request.POST:
+                if request.POST["es_local"+str(i)] == "on":
+                    es_local=True
             else:
                 es_local=False
             protocolo = Protocolo(name=request.POST["name"+str(i)],orden=int(request.POST["orden"+str(i)]),es_local=es_local)
             protocolo.save()
             proyecto_protocolos = Proyecto_protocolo(proyecto=proyecto,protocolo=protocolo)
             proyecto_protocolos.save()
+            
         cookies={
             'X-Bonita-API-Token':request.session['xbonita'],
             'BOS_Locale':request.session['boslocale'],
@@ -64,6 +82,7 @@ def listProyect(request):
     return render(request, 'localapp/listProyect.html',{'proyectos':proyectos})
 
 def getProtocol(request,pk):
+    protocolo = get_object_or_404(Protocolo,pk=pk)
     cookies={
         'X-Bonita-API-Token':request.session['xbonita'],
         'BOS_Locale':request.session['boslocale'],
@@ -75,7 +94,10 @@ def getProtocol(request,pk):
     idTask = nameTask.json()[0]['id']
     assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
     id = nameTask.json()[0]['caseId']
-    caseVariable = requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/id" ,cookies=cookies,json={'type': "java.lang.Integer",'value':pk},headers={'X-Bonita-API-Token':request.session['xbonita']})
+    requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/id" ,cookies=cookies,json={'type': "java.lang.Integer",'value':pk},headers={'X-Bonita-API-Token':request.session['xbonita']})
+    x = requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/es_local" ,cookies=cookies,json={'type': "java.lang.Boolean",'value':protocolo.es_local},headers={'X-Bonita-API-Token':request.session['xbonita']})
+    print(x)
+    print(x.content)
     protocolos = Protocolo.objects.all()
     return render(request, 'localapp/getProtocol.html',{'protocolos':protocolos})
 
@@ -113,14 +135,13 @@ def runProtocol(request,pk):
             nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dEjecutar protocolo",cookies=cookies)
             idTask = nameTask.json()[0]['id']
             caseId = nameTask.json()[0]['caseId']
-            print(dict(request.session))
-            assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
-            x=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/resultado" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
-            import pdb; pdb.set_trace()
             protocolo.status="running"
             protocolo.date_of_start=datetime.now()
             protocolo.author=request.user
+            protocolo.status="finished"
             protocolo.save()
+            assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
+            x=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/resultado" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
             return redirect('home')
     else:
         form = ProtocoloForm(instance=protocolo)
@@ -138,20 +159,24 @@ def selectOption(request,pk):
     return render(request,'localapp/selectOption.html',{'pk':pk})
 
 def protocolResult(request, id):
-    
     if request.method == 'GET':
         print("protocoloResult")
         protocol = Protocolo.objects.get(id=id)
+        protocol.puntaje = 15
+        protocol.save()
         if protocol.status == 'pending':
+            print("pending")
             return JsonResponse({'result': 'El protocolo esta en estado pendiente.'}, safe=False)
         if protocol.status == "running":
+            print("running")
             return JsonResponse({'result': 'El protocolo aun no ha finalizado.'}, safe=False)
         if protocol.status == "finished":
+            print("finished")
             if protocol.puntaje >= 6:
-                result = 'true'
+                print("true")
+                return HttpResponse("true")
             else:
-                result = 'false'
-        return result
+                return HttpResponse("false")
 
 def login_bonita(request):
     http = httplib2.Http()
@@ -181,6 +206,13 @@ def login_bonita(request):
     x4=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/xBonitaAPIToken" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['xbonita']},headers={'X-Bonita-API-Token':request.session['xbonita']})
     return response
 
+
+    #x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
+    
+    #headers = {"Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjA2OTM0ODI3LCJqdGkiOiI4N2UyZjZiYjA4NmQ0MmZkOGQyMzc1YzlhMWU0M2IwMSIsInVzZXJfaWQiOjF9.Tp9snW0m_5E_P1O_oivCmqOMPK5jTX2USd4Oo7CDF7E"}
+    #y=requests.get("https://dssddjango.herokuapp.com/protocolos/",headers=headers)
+    
+
 def loginn(request):
     if request.method == "POST":
         form = AuthenticationForm(request=request, data=request.POST)
@@ -207,5 +239,6 @@ def checkProtocolsPending(request, id):
         protocol = proyecto_protocolo[0].protocolo
         proyect = proyecto_protocolo[0].proyecto
         if proyect.cantidad > protocol.orden:
-            return JsonResponse({'pendings': 'true'}, safe=False)
-        return JsonResponse({'pendings': 'false'}, safe=False)
+            print("entro a cantidad > protocolo.orden")
+            return HttpResponse("true")
+        return HttpResponse("false")
