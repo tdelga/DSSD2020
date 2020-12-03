@@ -114,11 +114,15 @@ def getProtocol(request,pk):
     
     id = nameTask.json()[0]['caseId']
     
+    if protocolo.es_local == True:
+        es_local = "true"
+    else:
+        es_local = "false"
     requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/id" ,cookies=cookies,json={'type': "java.lang.Integer",'value':pk},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/es_local" ,cookies=cookies,json={'type': "java.lang.Boolean",'value':protocolo.es_local},headers={'X-Bonita-API-Token':request.session['xbonita']})
+    requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/es_local" ,cookies=cookies,json={'type': "java.lang.Boolean",'value': es_local},headers={'X-Bonita-API-Token':request.session['xbonita']})
     requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/idProyect" ,cookies=cookies,json={'type': "java.lang.Integer",'value':proyectoProcolo.proyecto.id},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/tokenHeroku" ,cookies=cookies,json={'type': "java.lang.Integer",'value':token},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    
+    requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/tokenHeroku" ,cookies=cookies,json={'type': "java.lang.String",'value':token},headers={'X-Bonita-API-Token':request.session['xbonita']})
+
     assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
     
     protocolos = Protocolo.objects.all()
@@ -222,11 +226,13 @@ def login_bonita(request):
     nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dConfiguracion del proyecto",cookies=cookies)
     caseId = nameTask.json()[0]['caseId']
     request.session['caseId'] = caseId
+
     x1=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['boslocale']},headers={'X-Bonita-API-Token':request.session['xbonita']})
     x1=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
     x2=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bonitatenant" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['bonita.tenant']},headers={'X-Bonita-API-Token':request.session['xbonita']})
     x3=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/jSESSIONID" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['session']},headers={'X-Bonita-API-Token':request.session['xbonita']})
     x4=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/xBonitaAPIToken" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['xbonita']},headers={'X-Bonita-API-Token':request.session['xbonita']})
+
     return response
 
 
