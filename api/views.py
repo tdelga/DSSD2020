@@ -73,10 +73,11 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
         if request.method == 'PUT':
             try:
                 proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto=pk_project)[0]
-                protcol_item = Protocolo.objects.get(protocolo=proyectoProcolo.protocolo)
+                protocoloProyecto = Proyecto_protocolo.objects.filter(protocolo_id=pk)[0]
+                protcol_item = Protocolo.objects.get(id=protocoloProyecto.protocolo_id)
                 if(protcol_item.status == "executing"):
                     raise Exception("El protocolo ya esta iniciado")
-                if(int(proyectoProcolo.proyecto) != int(pk_project)):
+                if(int(proyectoProcolo.proyecto_id) != int(pk_project)):
                     raise Exception("El protocolo no pertenece a ese proyecto")
                 protcol_item.date_of_start = datetime.datetime.now()
                 protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
