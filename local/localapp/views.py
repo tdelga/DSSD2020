@@ -28,7 +28,7 @@ def createProyect(request):
     if request.method == "POST":
         proyecto = Proyecto(name=request.POST["name"],cantidad=int(request.POST["totallength"]))
         proyecto.save()
-        
+        proyecto = Proyecto.objects.filter(name=request.POST["name"])[0]
         x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
         token = x.json()['access']
 
@@ -41,8 +41,8 @@ def createProyect(request):
                 "status":"pending",
             }
 
-        x=requests.post("https://dssddjango.herokuapp.com/proyectoProtocolo/",headers=headers,json=json)
-  
+        x=requests.post("https://dssddjango.herokuapp.com/proyectos/",headers=headers,json=json)
+        proyecto_url=x.json()['url']
         
         rango=range(1,int(request.POST["totallength"])+1)
         for i in rango: 
@@ -53,6 +53,18 @@ def createProyect(request):
                 es_local=False
             protocolo = Protocolo(name=request.POST["name"+str(i)],orden=int(request.POST["orden"+str(i)]),es_local=es_local)
             protocolo.save()
+            protocolo = Protocolo.objects.filter(name=request.POST["name"+str(i)])[0]
+            if not es_local:
+                json = {
+                        "name":protocolo.name,
+                        "es_local":False,
+                        "status":"ready",
+                        "orden":protocolo.orden
+                    } 
+                x=requests.post("https://dssddjango.herokuapp.com/protocolos/",headers=headers,json=json)
+                protocolo_url=x.json()['url']
+        
+                x=requests.post("https://dssddjango.herokuapp.com/proyectoProtocolo/",headers=headers,json={'proyecto':proyecto_url,'protocolo':protocolo_url})
             proyecto_protocolos = Proyecto_protocolo(proyecto=proyecto,protocolo=protocolo)
             proyecto_protocolos.save()
             
