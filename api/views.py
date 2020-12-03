@@ -68,6 +68,27 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
             users = Protocolo.objects.all()
             serializer = ProtocolosSerializer(users, many=True,context={'request': request})
             return Response(serializer.data)
+        
+    @action(detail=True, methods=['GET'], url_path="consulta", url_name="consulta")
+    def consulta(self,request,pk):
+        
+        if request.method == 'GET':
+            try:
+                
+                protcol_item = Protocolo.objects.get(id=pk)
+                if(protcol_item.status == "executing"):
+                    if(protcol_item.date_of_end < timezone.now()):
+                        protcol_item.status ="finished"
+                        protcol_item.save()    
+                        return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
+                if(protcol_item.status == "finished"):
+                    return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
+                return JsonResponse({'Estado del protocolo ': protcol_item.status}, safe=False, status=status.HTTP_200_OK)   
+
+            except ObjectDoesNotExist as e:
+                return JsonResponse({'error': "El protocolo no existe"}, safe=False, status=status.HTTP_404_NOT_FOUND)
+            except Exception as er:
+                return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
