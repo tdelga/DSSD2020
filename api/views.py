@@ -40,39 +40,13 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
     serializer_class = ProtocolosSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=True, methods=['PUT','GET'], url_path="inicializar/(?P<pk_project>[^/.]+)", url_name="update")
-    def inicializar(self,request,pk,pk_project):
-        
-        if request.method == 'PUT':
-            try:
-                protcol_item = Protocolo.objects.get(id=pk)
-                if(protcol_item.status == "executing"):
-                    raise Exception("El protocolo ya esta iniciado")
-                if(int(protcol_item.proyecto_id) != int(pk_project)):
-                    raise Exception("El protocolo no pertenece a ese proyecto")
-                protcol_item.date_of_start = datetime.datetime.now()
-                protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
-                protcol_item.status ="executing"
-                
-                protcol_item.save()    
-                
-
-                return JsonResponse({'Protocolo ': "Se inicializo correctamente"}, safe=False, status=status.HTTP_200_OK)
-            except ObjectDoesNotExist as e:
-                return JsonResponse({'error': "El protocolo no existe"}, safe=False, status=status.HTTP_404_NOT_FOUND)
-            except Exception as er:
-                return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        elif request.method == 'GET':
-            users = Protocolo.objects.all()
-            serializer = ProtocolosSerializer(users, many=True,context={'request': request})
-            return Response(serializer.data)
 
     @action(detail=True, methods=['PUT','GET'], url_path="inicializar/(?P<pk_project>[^/.]+)", url_name="update")
     def inicializar(self,request,pk,pk_project):
         
         if request.method == 'PUT':
             try:
-                proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto=pk_project)[0]
+                proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto_id=pk_project)[0]
                 protocoloProyecto = Proyecto_protocolo.objects.filter(protocolo_id=pk)[0]
                 protcol_item = Protocolo.objects.get(id=protocoloProyecto.protocolo_id)
                 if(protcol_item.status == "executing"):
