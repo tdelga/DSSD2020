@@ -67,26 +67,33 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
             serializer = ProtocolosSerializer(users, many=True,context={'request': request})
             return Response(serializer.data)
 
-    @action(detail=True, methods=['GET'], url_path="consulta", url_name="consulta")
-    def consulta(self,request,pk):
+    @action(detail=True, methods=['PUT','GET'], url_path="inicializar/(?P<pk_project>[^/.]+)", url_name="update")
+    def inicializar(self,request,pk,pk_project):
         
-        if request.method == 'GET':
+        if request.method == 'PUT':
             try:
-                
                 protcol_item = Protocolo.objects.get(id=pk)
+                proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto=pk_project)[0]
                 if(protcol_item.status == "executing"):
-                    if(protcol_item.date_of_end < timezone.now()):
-                        protcol_item.status ="finished"
-                        protcol_item.save()    
-                        return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
-                if(protcol_item.status == "finished"):
-                    return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
-                return JsonResponse({'Estado del protocolo ': protcol_item.status}, safe=False, status=status.HTTP_200_OK)   
+                    raise Exception("El protocolo ya esta iniciado")
+                if(int(proyectoProcolo.id) != int(pk_project)):
+                    raise Exception("El protocolo no pertenece a ese proyecto")
+                protcol_item.date_of_start = datetime.datetime.now()
+                protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
+                protcol_item.status ="executing"
+                
+                protcol_item.save()    
+                
 
+                return JsonResponse({'Protocolo ': "Se inicializo correctamente"}, safe=False, status=status.HTTP_200_OK)
             except ObjectDoesNotExist as e:
                 return JsonResponse({'error': "El protocolo no existe"}, safe=False, status=status.HTTP_404_NOT_FOUND)
             except Exception as er:
                 return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        elif request.method == 'GET':
+            users = Protocolo.objects.all()
+            serializer = ProtocolosSerializer(users, many=True,context={'request': request})
+            return Response(serializer.data)
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
