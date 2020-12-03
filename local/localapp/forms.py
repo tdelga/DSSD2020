@@ -13,4 +13,4 @@ class ProtocoloForm(forms.ModelForm):
 
     class Meta:
         model = Protocolo
-        fields = ("name","orden","es_local")
+        fields = ("puntaje",)

@@ -19,8 +19,8 @@
             <div class="col-md-6 text-center">
                 <br>
                 <br>
-                <u><h1>Elija una opcion debido al error en el proyecto {{ pk }} </h1></u>
-                    <form method="POST"> 
+                <u><h1>Elija una opcion debido al error en el proyecto {{ proyecto.nombre }} </h1></u>
+                    <form method="POST" action="/selectOption/{{proyecto.id}}"> 
                         <div class="form-group">
                             <select class="form-control" name="select" id="select">
                               <option value="reset">Reiniciar</option>

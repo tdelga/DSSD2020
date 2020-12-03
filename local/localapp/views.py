@@ -124,9 +124,16 @@ def getProtocol(request,pk):
     requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/tokenHeroku" ,cookies=cookies,json={'type': "java.lang.String",'value':token},headers={'X-Bonita-API-Token':request.session['xbonita']})
 
     assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    
+
+    if(protocolo.es_local):
+        return redirect('runProtocol',pk=pk)
+    else: 
+        return redirect('getProtoloRender')
+
+def getProtocolRender(request):
     protocolos = Protocolo.objects.all()
     return render(request, 'localapp/getProtocol.html',{'protocolos':protocolos})
+
 
 def inicializarProyect(request, id):
     cookies={
@@ -142,7 +149,12 @@ def inicializarProyect(request, id):
     proyect = Proyecto.objects.get(id=id)
     proyect.status = "running"
     proyect.save()
-    return render(request, 'localapp/listProyect.html',{})
+    return redirect('home')
+    
+
+def inicializarProyectRender(request):
+    proyectos = Proyecto.objects.all()
+    return render(request, 'localapp/listProyect.html',{'proyectos':proyectos})
 
 def home(request):
     return render(request, 'localapp/home.html')
@@ -151,6 +163,7 @@ def runProtocol(request,pk):
     protocolo = get_object_or_404(Protocolo, pk=pk)
     if request.method == "POST":
         form = ProtocoloForm(request.POST,instance=protocolo)
+        
         if form.is_valid():
             cookies={
             'X-Bonita-API-Token':request.session['xbonita'],
@@ -163,6 +176,7 @@ def runProtocol(request,pk):
             idTask = nameTask.json()[0]['id']
             caseId = nameTask.json()[0]['caseId']
             protocolo.status="running"
+            protocol.puntaje = request.POST['puntaje']
             protocolo.date_of_start=datetime.now()
             protocolo.author=request.user
             protocolo.status="finished"
@@ -174,36 +188,44 @@ def runProtocol(request,pk):
         form = ProtocoloForm(instance=protocolo)
     return render(request, 'localapp/runProtocol.html',{'form': form,'pk':pk})
 
+
+
 def selectOption(request,pk):
     proyecto = get_object_or_404(Proyecto,pk=pk)
     if request.method == "POST":
         select = request.POST["select"]
         if  select == "canceled":
             proyecto.status = "canceled"
+            return redirect('home')
         elif select == "reset":
             proyecto.status = "pending"
-        return redirect('home')
-    return render(request,'localapp/selectOption.html',{'pk':pk})
+            return redirect('home')
+        elif select == "continue":
+            proyecto.status = "running"
+            return redirect('inicializarProyectRender')
+        
+    return render(request,'localapp/selectOption.html',{'proyecto':proyecto})
 
 def protocolResult(request, id):
     if request.method == 'GET':
-        print("protocoloResult")
         protocol = Protocolo.objects.get(id=id)
-        protocol.puntaje = 15
-        protocol.save()
-        if protocol.status == 'pending':
-            print("pending")
-            return JsonResponse({'result': 'El protocolo esta en estado pendiente.'}, safe=False)
-        if protocol.status == "running":
-            print("running")
-            return JsonResponse({'result': 'El protocolo aun no ha finalizado.'}, safe=False)
         if protocol.status == "finished":
-            print("finished")
+  
             if protocol.puntaje >= 6:
-                print("true")
                 return HttpResponse("true")
             else:
                 return HttpResponse("false")
+        
+
+def finishResult(request,pk):
+    protocolo = get_object_or_404(Protocolo,pk=pk)
+    x.request.post("")
+    if(protocolo):
+        protocolo.status = "finished"
+        protocolo.save()
+    return redirect(redirect('home'))
+       
+
 
 def login_bonita(request):
     http = httplib2.Http()
@@ -268,6 +290,5 @@ def checkProtocolsPending(request, id):
         protocol = proyecto_protocolo[0].protocolo
         proyect = proyecto_protocolo[0].proyecto
         if proyect.cantidad > protocol.orden:
-            print("entro a cantidad > protocolo.orden")
             return HttpResponse("true")
         return HttpResponse("false")

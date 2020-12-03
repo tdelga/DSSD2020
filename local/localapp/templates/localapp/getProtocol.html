@@ -40,7 +40,7 @@
                         <td> {{ protocolo.status }} </td>
                         <td> {{ protocolo.orden }} </td>
                         <td> {% if protocolo.es_local == True %} Local {% else %} Remoto {% endif %} </td>
-                        <td><i class="fa fa-plus" aria-hidden="true"></i></td>
+                        <td><a href="/getProtocol/{{ proyecto.id }}"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
                       </tr>
                       {% endfor %}
                     </tbody>
