@@ -60,10 +60,10 @@ def createProyect(request):
                         "status":"ready",
                         "orden":protocolo.orden
                     } 
-                x=requests.post("https://dssddjango.herokuapp.com/protocolos/",headers=headers,json=json)
-                protocolo_url=x.json()['url']
+            x=requests.post("https://dssddjango.herokuapp.com/protocolos/",headers=headers,json=json)
+            protocolo_url=x.json()['url']
         
-                x=requests.post("https://dssddjango.herokuapp.com/proyectoProtocolo/",headers=headers,json={'proyecto':proyecto_url,'protocolo':protocolo_url})
+            x=requests.post("https://dssddjango.herokuapp.com/proyectoProtocolo/",headers=headers,json={'proyecto':proyecto_url,'protocolo':protocolo_url})
             proyecto_protocolos = Proyecto_protocolo(proyecto=proyecto,protocolo=protocolo)
             proyecto_protocolos.save()
             
@@ -128,7 +128,7 @@ def getProtocol(request,pk):
     if(protocolo.es_local):
         return redirect('runProtocol',pk=pk)
     else: 
-        return redirect('getProtoloRender')
+        return redirect('getProtocoloRender')
 
 def getProtocolRender(request):
     protocolos = Protocolo.objects.all()
