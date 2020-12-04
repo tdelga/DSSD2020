@@ -141,6 +141,13 @@ def inicializarProyect(request, id):
             'BOS_Locale':request.session['boslocale'],
             'JSESSIONID':request.session['session'],
             'bonita.tenant':request.session['bonita.tenant']}
+    
+    
+    x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
+    token = x.json()['access']
+    headers = {"Authorization": "Bearer "+token}
+    x=requests.put("https://dssddjango.herokuapp.com/proyectos/changeStatusProyect/"+str(id)+"/running/",headers=headers)
+    
     nameUser = requests.get("http://localhost:8080/bonita/API/identity/user?f=walter.bates",cookies=cookies )
     idUser = nameUser.json()[0]['id']
     nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dIniciar procesamiento",cookies=cookies)
