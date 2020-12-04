@@ -90,7 +90,7 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
             except Exception as er:
                 return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(detail=True, methods=['PUT'], url_path="changeStatusProtocol/(?P<pk>[^/.]+)/(?P<status>[^/.]+)/", url_name="changeStatusProtocol")
+    @action(detail=True, methods=['PUT'], url_path="changeStatusProtocol/<pk>/<status>/", url_name="changeStatusProtocol")
     def changeState(self,request, pk, status):
         if request.method == 'PUT':
             protocol = Protocolo.objects.get(id=pk)
@@ -110,7 +110,7 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     serializer_class = ProyectoSerializer
     #permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=True, methods=['PUT'], url_path="changeStatusProyect/(?P<pk>[^/.]+)/(?P<status>[^/.]+)/", url_name="changeStatusProyect")
+    @action(detail=True, methods=['PUT'], url_path="changeStatusProyect/<pk>/<status>", url_name="changeStatusProyect")
     def changeState(self,request, pk, status):
         if request.method == 'PUT':
             proyect = Proyecto.objects.get(id=pk)
