@@ -89,6 +89,17 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
                 return JsonResponse({'error': "El protocolo no existe"}, safe=False, status=status.HTTP_404_NOT_FOUND)
             except Exception as er:
                 return JsonResponse({'error': str(er)}, safe=False, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=True, methods=['PUT'], url_path="changeStatus", url_name="changeStatus")
+    def changeState(self,request, pk, status):
+        if request.method == 'PUT':
+            protocol = Protocolo.objects.get(id=pk)
+            if protocol.status != status:
+                protocol.status = status
+                protocol.save()
+                return JsonResponse({'result': protocol.status}, safe=False)
+            else:
+                return JsonResponse({'result': 'El protocolo ya se encuentra en ese estado'}, safe=False)
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
@@ -98,6 +109,18 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
     #permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['PUT'], url_path="changeStatus", url_name="changeStatus")
+    def changeState(self,request, pk, status):
+        if request.method == 'PUT':
+            proyect = Proyecto.objects.get(id=pk)
+            if proyect.status != status:
+                proyect.status = status
+                proyect.save()
+                return JsonResponse({'result': proyect.status}, safe=False)
+            else:
+                return JsonResponse({'result': 'El protocolo ya se encuentra en ese estado'}, safe=False)
+
 
 class ProyectoProtocoloViewSet(viewsets.ModelViewSet):
     """
