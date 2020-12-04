@@ -146,7 +146,7 @@ def inicializarProyect(request, id):
     x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
     token = x.json()['access']
     headers = {"Authorization": "Bearer "+token}
-    x=requests.put("https://dssddjango.herokuapp.com/proyectos/changeStatusProyect/"+str(id)+"/running/",headers=headers)
+    x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(id)+"/changeStatusProyect/running/",headers=headers)
     
     nameUser = requests.get("http://localhost:8080/bonita/API/identity/user?f=walter.bates",cookies=cookies )
     idUser = nameUser.json()[0]['id']
@@ -224,7 +224,7 @@ def selectOption(request,pk):
         protocolo = Protocolo.objects.get(id=proyectoProtocolo.id)
 
         if  select == "canceled":
-            x=requests.post("https://dssddjango.herokuapp.com/proyectos/changeStatusProyect/"+pk+"/finished/",headers=headers)
+            x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/finished/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"canceled"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             print(x.content)
@@ -232,21 +232,21 @@ def selectOption(request,pk):
             proyecto.save()
             return redirect('home')
         elif select == "resetProyect":
-            x=requests.post("https://dssddjango.herokuapp.com/proyectos/changeStatusProyect/"+pk+"/pending/",headers=headers)
+            x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/pending/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProyect"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "pending"
             proyecto.save()
             return redirect('home')
         elif select == "continue":
-            x=requests.post("https://dssddjango.herokuapp.com/proyectos/changeStatusProyect/"+pk+"/running/",headers=headers)
+            x=requests.post("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/running/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"continue"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "running"
             proyecto.save()
             return redirect('inicializarProyectRender')
         elif select == "resetProtocol":
-            x=requests.post("https://dssddjango.herokuapp.com/protocolos/changeStatusProtocol/"+protocolo.id+"/pending/",headers=headers)
+            x=requests.post("https://dssddjango.herokuapp.com/protocolos/"+str(protocolo.id)+"/changeStatusProtocol/pending/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProtocol"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             protocolo.status = "pending"
