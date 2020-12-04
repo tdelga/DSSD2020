@@ -217,7 +217,7 @@ def selectOption(request,pk):
         protocolo = Protocolo.objects.get(id=proyectoProtocolo.id)
 
         if  select == "canceled":
-            x=requests.post("https://dssddjango.herokuapp.com/proyectos/consulta/",headers=headers)
+            x=requests.post("https://dssddjango.herokuapp.com/proyectos/consulta/"+pk+"/finished/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"canceled"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             print(x.content)
@@ -225,18 +225,21 @@ def selectOption(request,pk):
             proyecto.save()
             return redirect('home')
         elif select == "resetProyect":
+            x=requests.post("https://dssddjango.herokuapp.com/proyectos/consulta/"+pk+"/pending/"",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProyect"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "pending"
             proyecto.save()
             return redirect('home')
         elif select == "continue":
+            x=requests.post("https://dssddjango.herokuapp.com/proyectos/consulta/"+pk+"/running/"",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"continue"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "running"
             proyecto.save()
             return redirect('inicializarProyectRender')
         elif select == "resetProtocol":
+            x=requests.post("https://dssddjango.herokuapp.com/protocolos/consulta/"+protocolo.id+"/pending/"",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProtocol"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             protocolo.status = "pending"
