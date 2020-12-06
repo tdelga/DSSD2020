@@ -32,6 +32,25 @@ def createProyect(request):
         x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
         token = x.json()['access']
 
+
+        cookies={
+        'X-Bonita-API-Token':request.session['xbonita'],
+        'BOS_Locale':request.session['boslocale'],
+        'JSESSIONID':request.session['session'],
+        'bonita.tenant':request.session['bonita.tenant']}
+        x = requests.get("http://localhost:8080/bonita/API/bpm/process?p=0&c=1000",cookies=cookies)
+        id = x.json()[0]['id']
+        requests.post("http://localhost:8080/bonita/API/bpm/process/"+id+"/instantiation",headers={'X-Bonita-API-Token':request.session['xbonita']},cookies=cookies)
+        nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dConfiguracion del proyecto",cookies=cookies)
+        
+        caseId = nameTask.json()[0]['caseId']
+        request.session['caseId'] = caseId
+
+        x1=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['boslocale']},headers={'X-Bonita-API-Token':request.session['xbonita']})
+        x1=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
+        x2=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bonitatenant" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['bonita.tenant']},headers={'X-Bonita-API-Token':request.session['xbonita']})
+        x3=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/jSESSIONID" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['session']},headers={'X-Bonita-API-Token':request.session['xbonita']})
+        x4=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/xBonitaAPIToken" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['xbonita']},headers={'X-Bonita-API-Token':request.session['xbonita']})
     
         headers = {"Authorization": "Bearer "+token}
         json = {
@@ -82,8 +101,11 @@ def createProyect(request):
                 "assigned_id" : idUser, 
                 "state": "completed"
                 }
+        print(type(proyecto.cantidad))
+        print(proyecto.cantidad)
+        requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/cantidadInstancias" ,cookies=cookies,json={'type':"java.lang.Integer",'value':int(proyecto.cantidad)},headers={'X-Bonita-API-Token':request.session['xbonita']})
         assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
-        return redirect('createProyect')
+        return redirect('inicializarProyectRender')
     else:
         form = ProyectoForm()
     return render(request, 'localapp/createProyect.html', {'formProyecto':form})
@@ -166,11 +188,21 @@ def inicializarProyectRender(request):
 def home(request):
     return render(request, 'localapp/home.html')
 
+def protocolResult(request, id):
+    if request.method == 'GET':
+        protocol = Protocolo.objects.get(id=id)
+        if protocol.status == "finished":
+  
+            if protocol.puntaje >= 6:
+                return HttpResponse("true")
+            else:
+                return HttpResponse("false")
+
 def runProtocol(request,pk):
     protocolo = get_object_or_404(Protocolo, pk=pk)
+    proyectoProcolo = Proyecto_protocolo.objects.filter(protocolo=pk)[0]
     if request.method == "POST":
         form = ProtocoloForm(request.POST,instance=protocolo)
-        
         if form.is_valid():
             cookies={
             'X-Bonita-API-Token':request.session['xbonita'],
@@ -190,14 +222,22 @@ def runProtocol(request,pk):
             protocolo.save()
             assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             x=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/resultado" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
-            return redirect('home')
+            
+            proyectoProcolo = Proyecto_protocolo.objects.filter(protocolo=pk)[0]
+        
+            result = requests.get("http://localhost:8000/protocolResult/"+str(pk))
+
+            if result.content.decode() == "false":
+                return redirect('selectOption',pk=proyectoProcolo.proyecto.id)
+
+            return redirect('getProtocolRender')
     else:
         form = ProtocoloForm(instance=protocolo)
     return render(request, 'localapp/runProtocol.html',{'form': form,'pk':pk})
 
 
 
-def selectOption(request,pk):
+def selectOption(request,pk,pkProtocol):
     proyecto = get_object_or_404(Proyecto,pk=pk)
 
     
@@ -220,8 +260,7 @@ def selectOption(request,pk):
         
         select = request.POST["select"]
         
-        proyectoProtocolo = Proyecto_protocolo.objects.filter(proyecto=pk)[0]
-        protocolo = Protocolo.objects.get(id=proyectoProtocolo.id)
+        protocolo = Protocolo.objects.get(id=pkProtocol)
 
         if  select == "canceled":
             x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/finished/",headers=headers)
@@ -254,16 +293,6 @@ def selectOption(request,pk):
             return redirect('getProtocolRender')
     else: 
         return render(request,'localapp/selectOption.html',{'proyecto':proyecto})
-
-def protocolResult(request, id):
-    if request.method == 'GET':
-        protocol = Protocolo.objects.get(id=id)
-        if protocol.status == "finished":
-  
-            if protocol.puntaje >= 6:
-                return HttpResponse("true")
-            else:
-                return HttpResponse("false")
         
 
 def finishResult(request,pk):
@@ -292,16 +321,12 @@ def login_bonita(request):
             'bonita.tenant':request.session['bonita.tenant']}
     x = requests.get("http://localhost:8080/bonita/API/bpm/process?p=0&c=1000",cookies=cookies)
     id = x.json()[0]['id']
-    requests.post("http://localhost:8080/bonita/API/bpm/process/"+id+"/instantiation",headers={'X-Bonita-API-Token':request.session['xbonita']},cookies=cookies)
+    """requests.post("http://localhost:8080/bonita/API/bpm/process/"+id+"/instantiation",headers={'X-Bonita-API-Token':request.session['xbonita']},cookies=cookies)
     nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dConfiguracion del proyecto",cookies=cookies)
     caseId = nameTask.json()[0]['caseId']
     request.session['caseId'] = caseId
 
-    x1=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['boslocale']},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    x1=requests.get("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bOS_Locale" ,cookies=cookies,headers={'X-Bonita-API-Token':request.session['xbonita']})
-    x2=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/bonitatenant" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['bonita.tenant']},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    x3=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/jSESSIONID" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['session']},headers={'X-Bonita-API-Token':request.session['xbonita']})
-    x4=requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/xBonitaAPIToken" ,cookies=cookies,json={'type':"java.lang.String",'value':request.session['xbonita']},headers={'X-Bonita-API-Token':request.session['xbonita']})
+    """
 
     return response
 
