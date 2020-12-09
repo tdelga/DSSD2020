@@ -12,6 +12,7 @@ class Proyecto(models.Model):
     date_of_end = models.DateTimeField(null=True)
     miembro_id = models.ForeignKey(Miembro_proyecto , on_delete=models.CASCADE , related_name='proyecto_id', null=True)
     cantidad = models.IntegerField(default=0)
+    actual = models.IntegerField(default=1)
     status = models.CharField(max_length=20, default='pending')
 
 class Protocolo(models.Model):
