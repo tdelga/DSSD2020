@@ -15,11 +15,10 @@
 <body>
     <div class="container">
         <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6 text-center">
+            <div class="col-md-12 text-center">
                 <br>
                 <br>
-                <u><h1>Protocolos</h1></u>
+                <u><h1>Tareas {{state}} </h1></u>
                 <br>
                 <table class="table table-bordered">
                     <thead>
@@ -27,26 +26,22 @@
                         <th scope="col">#</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Estado</th>
-                        <th scope="col">Orden</th>
-                        <th scope="col">Ejecución</th>
-                        <th scope="col">Agregar</th>
+                        <th scope="col">Descripción</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {% for protocolo in protocolos %}
+                      {% for j in json %}
                       <tr>
                         <th scope="row">{{ forloop.counter }}</th>
-                        <td> {{ protocolo.nombre }} </td>
-                        <td> {{ protocolo.status }} </td>
-                        <td> {{ protocolo.orden }} </td>
-                        <td> {% if protocolo.es_local == True %} Local {% else %} Remoto {% endif %} </td>
-                        <td><a href="/getProtocol/{{ protocolo.id }}"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
+                        <td> {{ j.name }} </td>
+                        <td> {{ j.state }} </td>
+                        <td> {{ j.description }} </td>
                       </tr>
                       {% endfor %}
                     </tbody>
                   </table>
             </div>
-            <div class="col-md-3"></div>
+
         </div>
     </div>
     {% block scripts %}

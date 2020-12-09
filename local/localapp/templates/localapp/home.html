@@ -1,1 +1,75 @@
 {% extends 'localapp/base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block head %}
+    {{ block.super}}
+    
+    {% block title %}
+        <title>Get Protocol</title>
+    {% endblock %}
+
+    
+
+{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+  {% if user.is_authenticated %}
+  <div class="text-center">
+    <u><h1> Aprobación de medicamentos </h1></u>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+            <img style=" height:200px;" src="{% static '/localapp/images/laboratorio.jpg' %}" alt="My image">
+            <div class="card-body">
+              <h5 class="card-title">Crear Proyecto</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+              <a href="{% url 'createProyect' %}" class="btn btn-primary">Crear</a>
+            </div>
+          </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+            <img style=" height:200px;" src="{% static '/localapp/images/laboratorio-analisis.jpg' %}" alt="My image">
+            <div class="card-body">
+              <h5 class="card-title">Iniciar Proyecto</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+              <a href="{% url 'inicializarProyectRender' %}" class="btn btn-primary">Iniciar</a>
+            </div>
+          </div>
+    </div>
+    <div class="col-md-2"></div>
+  </div>
+  {% else %}
+    <br>
+    <div class="text-center">
+      <u><h1> Bienvenidos al gestor de medicamentos </h1></u>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-8">
+          <div class="card" style="width: 18rem;">
+              <img style="  height:200px;" src="{% static '/localapp/images/labo_1.jpg' %}" alt="My image">
+              <div class="card-body">
+                <h5 class="card-title">Gestione sus proyectos</h5>
+                <p class="card-text">Aplicación web que permite cargar, ejecutar y gestionar proyectos relacionados al sector farmacéutico</p>
+                <a href="{% url 'login' %}" class="btn btn-primary">Iniciar Sesion</a>
+              </div>
+            </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+  {% block scripts %}
+    {{ block.super }} 
+  {% endblock %}
+
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.urls import path, include
+
 from . import views
 
 urlpatterns = [
@@ -16,4 +17,7 @@ urlpatterns = [
     path('inicializarProyectRender',views.inicializarProyectRender, name='inicializarProyectRender'),
     path('protocolResult/<int:id>', views.protocolResult, name='protocolResult'),
     path('checkProtocolsPending/<int:id>', views.checkProtocolsPending, name='checkProtocolsPending'),
+    path('finishResult/<int:pk>',views.finishResult,name="finishResult"),
+    path('readyTasks',views.readyTasks,name="readyTasks"),
+    path('taskWithState/<str:state>',views.taskWithState,name="taskWithState")
 ]
