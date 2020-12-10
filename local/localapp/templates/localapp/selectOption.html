@@ -20,7 +20,7 @@
                 <br>
                 <br>
                 <u><h1>Elija una opcion debido al error en el proyecto {{ proyecto.nombre }} </h1></u>
-                    <form method="POST" action="/selectOption/{{proyecto.id}}"> {% csrf_token %}
+                    <form method="POST" action="/selectOption/{{proyecto.id}}/{{pkProtocol}}/"> {% csrf_token %}
                         <div class="form-group">
                             <select class="form-control" name="select" id="select">
                               <option value="resetProyect">Reiniciar Proyecto</option>

@@ -43,7 +43,6 @@ def createProyect(request):
         id = x.json()[0]['id']
         requests.post("http://localhost:8080/bonita/API/bpm/process/"+id+"/instantiation",headers={'X-Bonita-API-Token':request.session['xbonita']},cookies=cookies)
         nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dConfiguracion del proyecto",cookies=cookies)
-        print(nameTask)
         caseId = nameTask.json()[0]['caseId']
         request.session['caseId'] = caseId
 
@@ -120,14 +119,13 @@ def getProtocol(request,pk):
 
     protocolo = get_object_or_404(Protocolo,pk=pk)
     proyectoProcolo = Proyecto_protocolo.objects.filter(protocolo=pk)[0]
+    proyecto = proyectoProcolo.proyecto
 
-    print(proyectoProcolo.proyecto.id)
-    print(proyectoProcolo.protocolo.orden)
-    if proyectoProcolo.proyecto.actual == proyectoProcolo.protocolo.orden:
+    if proyecto.actual == proyectoProcolo.protocolo.orden:
             
-        proyectoProcolo.proyecto.actual = proyectoProcolo.proyecto.actual + 1
+        proyecto.actual = proyecto.actual + 1
 
-        proyectoProcolo.save()
+        proyecto.save()
         
         cookies={
             'X-Bonita-API-Token':request.session['xbonita'],
@@ -138,12 +136,10 @@ def getProtocol(request,pk):
         nameUser = requests.get("http://localhost:8080/bonita/API/identity/user?f=helen.kelly",cookies=cookies )
         idUser = nameUser.json()[0]['id']
         
-        nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dTomar protocolo",cookies=cookies)
-        
-        array =  nameTask.json()
-        array.pop(0)
-        idTask = array[0]['id']
-        id = array[0]['caseId']
+        nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dTomar protocolo",cookies=cookies)   
+
+        idTask = nameTask.json()[0]['id']
+        id = nameTask.json()[0]['caseId']
         
         if protocolo.es_local == True:
             es_local = "true"
@@ -155,8 +151,6 @@ def getProtocol(request,pk):
         requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+id+"/tokenHeroku" ,cookies=cookies,json={'type': "java.lang.String",'value':token},headers={'X-Bonita-API-Token':request.session['xbonita']})
 
         assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
-        print(assingUser)
-        print(assingUser.content)
 
         if(protocolo.es_local):
             return redirect('runProtocol',pk=pk)
@@ -187,7 +181,6 @@ def inicializarProyect(request, id):
     idUser = nameUser.json()[0]['id']
     nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dIniciar procesamiento",cookies=cookies)
     idTask = nameTask.json()[0]['id']
-    print(idTask)
     assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
     proyect = Proyecto.objects.get(id=id)
     proyect.status = "running"
@@ -242,7 +235,7 @@ def runProtocol(request,pk):
             result = requests.get("http://localhost:8000/protocolResult/"+str(pk))
 
             if result.content.decode() == "false":
-                return redirect('selectOption',pk=proyectoProcolo.proyecto.id)
+                return redirect('selectOption',pk=proyectoProcolo.proyecto.id,pkProtocol=proyectoProcolo.protocolo.id)
 
             return redirect('getProtocolRender')
     else:
@@ -253,7 +246,6 @@ def runProtocol(request,pk):
 
 def selectOption(request,pk,pkProtocol):
     proyecto = get_object_or_404(Proyecto,pk=pk)
-
     
     if request.method == "POST":
         cookies={
@@ -280,7 +272,6 @@ def selectOption(request,pk,pkProtocol):
             x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/finished/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"canceled"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
-            print(x.content)
             proyecto.status = "finished"
             proyecto.save()
             return redirect('home')
@@ -289,6 +280,7 @@ def selectOption(request,pk,pkProtocol):
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProyect"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "pending"
+            proyecto.actual = 1
             proyecto.save()
             return redirect('home')
         elif select == "continue":
@@ -303,10 +295,12 @@ def selectOption(request,pk,pkProtocol):
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProtocol"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             protocolo.status = "pending"
+            proyecto.actual = proyecto.actual-1
+            proyecto.save()
             protocolo.save()
             return redirect('getProtocolRender')
     else: 
-        return render(request,'localapp/selectOption.html',{'proyecto':proyecto})
+        return render(request,'localapp/selectOption.html',{'proyecto':proyecto,'pkProtocol':pkProtocol})
         
 
 def finishResult(request,pk):
