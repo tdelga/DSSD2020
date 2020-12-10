@@ -49,13 +49,13 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
                 proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto_id=pk_project)[0]
                 protocoloProyecto = Proyecto_protocolo.objects.filter(protocolo_id=pk)[0]
                 protcol_item = Protocolo.objects.get(id=protocoloProyecto.protocolo_id)
-                if(protcol_item.status == "executing"):
+                if(protcol_item.status == "running"):
                     raise Exception("El protocolo ya esta iniciado")
                 if(int(proyectoProcolo.proyecto_id) != int(pk_project)):
                     raise Exception("El protocolo no pertenece a ese proyecto")
                 protcol_item.date_of_start = datetime.datetime.now()
                 protcol_item.date_of_end = datetime.datetime.now() + datetime.timedelta(minutes=15)
-                protcol_item.status ="executing"
+                protcol_item.status ="running"
                 protcol_item.save()    
                 
 
@@ -70,19 +70,10 @@ class ProtocoloViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         
     @action(detail=True, methods=['GET'], url_path="consulta", url_name="consulta")
-    def consulta(self,request,pk):
-        
+    def consulta(self,request,pk):        
         if request.method == 'GET':
-            try:
-                
+            try:                
                 protcol_item = Protocolo.objects.get(id=pk)
-                if(protcol_item.status == "executing"):
-                    if(protcol_item.date_of_end < timezone.now()):
-                        protcol_item.status ="finished"
-                        protcol_item.save()    
-                        return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
-                if(protcol_item.status == "finished"):
-                    return JsonResponse({'Estado del protocolo ': protcol_item.status,'Puntaje': protcol_item.puntaje}, safe=False, status=status.HTTP_200_OK)
                 return JsonResponse({'Estado del protocolo ': protcol_item.status}, safe=False, status=status.HTTP_200_OK)   
 
             except ObjectDoesNotExist as e:
