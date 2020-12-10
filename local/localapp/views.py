@@ -72,13 +72,12 @@ def createProyect(request):
             protocolo = Protocolo(name=request.POST["name"+str(i)],orden=int(request.POST["orden"+str(i)]),es_local=es_local)
             protocolo.save()
             protocolo = Protocolo.objects.filter(name=request.POST["name"+str(i)])[0]
-            if not es_local:
-                json = {
-                        "name":protocolo.name,
-                        "es_local":False,
-                        "status":"ready",
-                        "orden":protocolo.orden
-                    } 
+            json = {
+                    "name":protocolo.name,
+                    "es_local":False,
+                    "status":"pending",
+                    "orden":protocolo.orden
+            } 
             x=requests.post("https://dssddjango.herokuapp.com/protocolos/",headers=headers,json=json)
             protocolo_url=x.json()['url']
         
@@ -113,7 +112,6 @@ def listProyect(request):
     return render(request, 'localapp/listProyect.html',{'proyectos':proyectos})
 
 def getProtocol(request,pk):
-    global proyectos_protocolos
     x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
     token = x.json()['access']
 
@@ -176,14 +174,19 @@ def inicializarProyect(request, id):
     token = x.json()['access']
     headers = {"Authorization": "Bearer "+token}
     x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(id)+"/changeStatusProyect/running/",headers=headers)
-    
     nameUser = requests.get("http://localhost:8080/bonita/API/identity/user?f=walter.bates",cookies=cookies )
     idUser = nameUser.json()[0]['id']
     nameTask = requests.get("http://localhost:8080/bonita/API/bpm/activity?p=0&c=10&f=name%3dIniciar procesamiento",cookies=cookies)
     idTask = nameTask.json()[0]['id']
     assingUser = requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
     proyect = Proyecto.objects.get(id=id)
+    proyect.date_of_start=datetime.now()
     proyect.status = "running"
+
+    x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(id)+"/",headers=headers,json={"name":proyect.name,"date_of_start":str(proyect.date_of_start)})
+    print(x)
+    print(x.content)
+
     proyect.save()
     return redirect('home')
     
@@ -246,7 +249,7 @@ def runProtocol(request,pk):
 
 def selectOption(request,pk,pkProtocol):
     proyecto = get_object_or_404(Proyecto,pk=pk)
-    
+    proyectoProcolo = Proyecto_protocolo.objects.filter(proyecto=pk)
     if request.method == "POST":
         cookies={
             'X-Bonita-API-Token':request.session['xbonita'],
@@ -279,19 +282,25 @@ def selectOption(request,pk,pkProtocol):
             x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/pending/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProyect"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
+            for pp in proyectoProcolo:
+                x=requests.put("https://dssddjango.herokuapp.com/protocolos/"+str(pp.protocolo.id)+"/changeStatusProtocol/pending//",headers=headers)
+                print(x)
+                print(x.content)
+                pp.protocolo.status = "pending"
+                pp.protocolo.save()
             proyecto.status = "pending"
             proyecto.actual = 1
             proyecto.save()
             return redirect('home')
         elif select == "continue":
-            x=requests.post("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/running/",headers=headers)
+            x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(pk)+"/changeStatusProyect/running/",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"continue"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             proyecto.status = "running"
             proyecto.save()
             return redirect('inicializarProyectRender')
         elif select == "resetProtocol":
-            x=requests.post("https://dssddjango.herokuapp.com/protocolos/"+str(protocolo.id)+"/changeStatusProtocol/pending//",headers=headers)
+            x=requests.put("https://dssddjango.herokuapp.com/protocolos/"+str(protocolo.id)+"/changeStatusProtocol/pending//",headers=headers)
             requests.put("http://localhost:8080/bonita/API/bpm/caseVariable/"+caseId+"/select" ,cookies=cookies,json={'type': "java.lang.String",'value':"resetProtocol"},headers={'X-Bonita-API-Token':request.session['xbonita']})
             requests.put("http://localhost:8080/bonita/API/bpm/humanTask/"+idTask ,cookies=cookies,json={'assigned_id':idUser,'state':'completed'},headers={'X-Bonita-API-Token':request.session['xbonita']})
             protocolo.status = "pending"
@@ -355,12 +364,18 @@ def logout_request(request):
     return render(request, 'localapp/home.html')
 
 def checkProtocolsPending(request, id):
+    x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
+    token = x.json()['access']
+    headers = {"Authorization": "Bearer "+token}
     if request.method == 'GET':
         proyecto_protocolo = Proyecto_protocolo.objects.filter(protocolo=id)
         protocol = proyecto_protocolo[0].protocolo
         proyect = proyecto_protocolo[0].proyecto
         if proyect.cantidad > protocol.orden:
             return HttpResponse("true")
+        x=requests.put("https://dssddjango.herokuapp.com/proyectos/"+str(proyect.id)+"/changeStatusProyect/finished/",headers=headers)
+        proyect.status="finished"
+        proyect.save()
         return HttpResponse("false")
 
 
