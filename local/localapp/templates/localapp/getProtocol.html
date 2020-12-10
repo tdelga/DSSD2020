@@ -36,10 +36,10 @@
                       {% for protocolo in protocolos %}
                       <tr>
                         <th scope="row">{{ forloop.counter }}</th>
-                        <td> {{ protocolo.nombre }} </td>
+                        <td> {{ protocolo.name }} </td>
                         <td> {{ protocolo.status }} </td>
                         <td> {{ protocolo.orden }} </td>
-                        <td> {% if protocolo.es_local == True %} Local {% else %} Remoto {% endif %} </td>
+                        <td> Local </td>
                         <td><a href="/getProtocol/{{ protocolo.id }}"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
                       </tr>
                       {% endfor %}

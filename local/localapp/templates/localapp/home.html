@@ -15,7 +15,6 @@
 
 {% block body %}
 
-
 <div class="container">
   {% if user.is_authenticated %}
   <div class="text-center">
@@ -24,12 +23,13 @@
   <br>
   <div class="row">
     <div class="col-md-2"></div>
+    {% if request.user.username == "walter.bates" %}
     <div class="col-md-4">
         <div class="card" style="width: 18rem;">
             <img style=" height:200px;" src="{% static '/localapp/images/laboratorio.jpg' %}" alt="My image">
             <div class="card-body">
               <h5 class="card-title">Crear Proyecto</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+              <p class="card-text">Formulario para la creación de proyectos con protocolos.</p>
               <a href="{% url 'createProyect' %}" class="btn btn-primary">Crear</a>
             </div>
           </div>
@@ -39,13 +39,35 @@
             <img style=" height:200px;" src="{% static '/localapp/images/laboratorio-analisis.jpg' %}" alt="My image">
             <div class="card-body">
               <h5 class="card-title">Iniciar Proyecto</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+              <p class="card-text">Listado de proyectos pendientes</p>
               <a href="{% url 'inicializarProyectRender' %}" class="btn btn-primary">Iniciar</a>
             </div>
           </div>
     </div>
-    <div class="col-md-2"></div>
+    {% else %}
+      <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+            <img style=" height:200px;" src="{% static '/localapp/images/laboratorio.jpg' %}" alt="My image">
+            <div class="card-body">
+              <h5 class="card-title">Listado de protocolos</h5>
+              <p class="card-text">Listado de protcolos remotos</p>
+              <a href="{% url 'listProtocolRemoteRender' %}" class="btn btn-primary">Listado Remotos</a>
+            </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card" style="width: 18rem;">
+            <img style=" height:200px;" src="{% static '/localapp/images/laboratorio.jpg' %}" alt="My image">
+            <div class="card-body">
+              <h5 class="card-title">Listado de protocolos</h5>
+              <p class="card-text">Listado de protcolos asignados</p>
+              <a href="{% url 'getProtocolRender' %}" class="btn btn-primary">Listado</a>
+            </div>
+          </div>
+      </div>
+      {% endif %}
   </div>
+  <div class="col-md-2"></div>
   {% else %}
     <br>
     <div class="text-center">

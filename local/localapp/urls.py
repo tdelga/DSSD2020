@@ -19,5 +19,7 @@ urlpatterns = [
     path('checkProtocolsPending/<int:id>', views.checkProtocolsPending, name='checkProtocolsPending'),
     path('finishResult/<int:pk>',views.finishResult,name="finishResult"),
     path('readyTasks',views.readyTasks,name="readyTasks"),
-    path('taskWithState/<str:state>',views.taskWithState,name="taskWithState")
+    path('taskWithState/<str:state>',views.taskWithState,name="taskWithState"),
+    path('listProtocolRemoteRender',views.listProtocolRemoteRender,name="listProtocolRemoteRender"),
+    path('listProtocolRemote/<int:pk>',views.listProtocolRemote,name="listProtocolRemote")
 ]

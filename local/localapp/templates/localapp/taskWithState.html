@@ -34,7 +34,7 @@
                       <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td> {{ j.name }} </td>
-                        <td> {{ j.state }} </td>
+                        <td> {% if state == "finalizadas" %} Finalizada {% else %} fallida {% endif %} </td>
                         <td> {{ j.description }} </td>
                       </tr>
                       {% endfor %}

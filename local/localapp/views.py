@@ -158,7 +158,7 @@ def getProtocol(request,pk):
         return redirect('home')
 
 def getProtocolRender(request):
-    protocolos = Protocolo.objects.all()
+    protocolos = Protocolo.objects.filter(es_local=True)
     return render(request, 'localapp/getProtocol.html',{'protocolos':protocolos})
 
 
@@ -397,11 +397,25 @@ def taskWithState(request,state):
         'bonita.tenant':request.session['bonita.tenant']}
     
     tasks = requests.get("http://localhost:8080/bonita/API/bpm/archivedActivity?p=0&c=10&f=state="+state,cookies=cookies)
-    if(state == "finished"):
+    if(state == "completed"):
         state = "finalizadas"
     else:
         state = "fallidas"
     return render(request,"localapp/taskWithState.html",{"json":tasks.json(),"state":state})
+
+
+def listProtocolRemote(request,pk):
+    x=requests.post("https://dssddjango.herokuapp.com/api/token/",json={"username":"root","password":"root"})
+    token = x.json()['access']
+    headers = {"Authorization": "Bearer "+token}
+    
+    x=requests.put("https://dssddjango.herokuapp.com/protocolos/"+str(pk)+"/changeStatusProtocol/finished//",headers=headers)
+
+    return redirect("listProtocolRemoteRender")
+
+def listProtocolRemoteRender(request):
+    protocolos = Protocolo.objects.filter(es_local=False)
+    return render(request,"localapp/listProtocolRemote.html",{"protocolos":protocolos})
 
 
 
